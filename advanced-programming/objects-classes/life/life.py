@@ -2,97 +2,30 @@ import os
 import random
 import time
 
+WIDTH, HEIGHT, ITERATIONS, DELAY  = 20, 20, 50, 0.01
 
-class Cell:
-    def __init__(self, state=False):
-        self.state = state
+OFFSETS = (
+    (-1, -1), (-1, 0), (-1, 1),
+    (0, -1), (0, 1),
+    (1, -1), (1, 0), (1, 1)
+)
 
-    def is_alive(self):
-        return self.state
+random.seed(42)
 
-    def set_state(self, state):
-        self.state = state
+def alive(cells, x, y):
+    neighbors = sum(cells[(y + dy) % HEIGHT][(x + dx) % WIDTH] for dx, dy in OFFSETS)
+    return 2 <= neighbors <=3 if cells[y][x] else neighbors == 3
 
-
-class Grid:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.cells = [[Cell() for _ in range(width)] for _ in range(height)]
-
-    def get_cell(self, x, y):
-        return self.cells[y][x]
-
-    def set_cell(self, x, y, state):
-        self.cells[y][x].set_state(state)
-
-
-class NeighborCounter:
-    @staticmethod
-    def count_neighbors(grid, x, y):
-        count = 0
-        for dx in [-1, 0, 1]:
-            for dy in [-1, 0, 1]:
-                if dx == 0 and dy == 0:
-                    continue
-                nx, ny = (x + dx) % grid.width, (y + dy) % grid.height
-                if grid.get_cell(nx, ny).is_alive():
-                    count += 1
-        return count
-
-
-class Rules:
-    @staticmethod
-    def apply_rules(cell, neighbor_count):
-        if cell.is_alive():
-            return 2 <= neighbor_count <= 3
-        else:
-            return neighbor_count == 3
-
-
-class GameOfLife:
-    def __init__(self, width, height):
-        self.grid = Grid(width, height)
-        self.neighbor_counter = NeighborCounter()
-        self.rules = Rules()
-
-    def initialize_random(self, probability=0.3):
-        for y in range(self.grid.height):
-            for x in range(self.grid.width):
-                self.grid.set_cell(x, y, random.random() < probability)
-
-    def step(self):
-        new_grid = Grid(self.grid.width, self.grid.height)
-        for y in range(self.grid.height):
-            for x in range(self.grid.width):
-                cell = self.grid.get_cell(x, y)
-                neighbor_count = self.neighbor_counter.count_neighbors(self.grid, x, y)
-                new_state = self.rules.apply_rules(cell, neighbor_count)
-                new_grid.set_cell(x, y, new_state)
-        self.grid = new_grid
-
-    def run(self, iterations, delay=0.1):
-        for _ in range(iterations):
-            os.system('clear')  # Windows: os.system('cls')
-            self.display()
-            self.step()
-            time.sleep(delay)
-
-    def display(self):
-        for y in range(self.grid.height):
-            for x in range(self.grid.width):
-                print('■' if self.grid.get_cell(x, y).is_alive() else '□', end='')
-            print()
-        print()
-
-
-class GameOfLifeRunner:
-    @staticmethod
-    def run_game(width, height, iterations):
-        game = GameOfLife(width, height)
-        game.initialize_random()
-        game.run(iterations)
-
+def next_state(cells):
+    return [
+        [alive(cells, x, y) for x in range(WIDTH)]
+        for y in range(HEIGHT)
+    ]
 
 if __name__ == "__main__":
-    GameOfLifeRunner.run_game(20, 20, 50)
+    cells = [[random.random() < 0.3 for _ in range(WIDTH)] for _ in range(HEIGHT)]
+    for _ in range(ITERATIONS):
+        os.system('clear')
+        print('\n'.join(''.join('■' if x else '□' for x in row) for row in cells))
+        cells = next_state(cells)
+        time.sleep(DELAY)
