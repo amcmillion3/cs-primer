@@ -34,6 +34,16 @@ def vec_neg(v1):
     return vec_init(-v1[0], -v1[1])
 
 
+def disp_move(v1, velocity, time):
+    """
+    Change the displacement by applying the given velocity for the given time
+
+    e.g. vector (3, 2), if moved for 5 seconds at 1 m/s, would be (8, 7)
+    """
+    v1[0] = v1[0] + velocity * time
+    v1[1] = v1[1] + velocity * time
+
+
 if __name__ == '__main__':
     v1 = vec_init(3, 2)
     v2 = vec_init(1, 1)
@@ -45,6 +55,11 @@ if __name__ == '__main__':
     assert vec_equals(vec_add(v1, v2), vec_init(4, 3))
     assert vec_equals(vec_sub(v1, v2), vec_init(2, 1))
     assert vec_equals(vec_neg(v1), vec_init(-3, -2))
+
+
+    d = vec_init(3, 2)
+    disp_move(d, 1, 5)
+    assert d == vec_init(8, 7)
 
     print(vec_str(v3))
     print('ok')
